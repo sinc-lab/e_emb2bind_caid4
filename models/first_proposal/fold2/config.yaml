@@ -1,0 +1,29 @@
+batch_size: 16
+caid_path: data/processed/
+categories:
+- non-binding
+- binding
+data_path: data/interim/
+dataset: binding
+datasets_to_test:
+- dev
+- test
+- caid3/binding
+- caid3/binding_idr
+debug: false
+disprot_version: 25-06
+dropout_rate: 0.6
+emb_size: 352
+energy_emb_path: data/embeddings/energy/
+filters: 150
+kernel_size: 9
+lr: 0.001
+n_resnet: 1
+nepoch: 500
+patience: 15
+plm: esm2_6m
+plm_emb_path: data/embeddings/plm/esm2_6m/
+reduce_method: weighted-scaled
+soft_max: true
+subset: cv10_nr_seed42_w-test/fold_2
+win_len: 15
