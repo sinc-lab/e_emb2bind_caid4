@@ -1,17 +1,18 @@
 """
-Predict disorder from protein embeddings using a trained ensemble model.
+Predict binding residues from protein sequences using a trained ensemble model and
+protein language models.
 
-Run:
-    python predict_CAID.py -f data/samples.fasta
-    python predict_CAID.py -f data/processed/caid3/binding.fasta
+Usage:
+    python predict.py -f data/samples.fasta
 """
+import os
+import yaml
+import time
 import argparse
 import numpy as np
 import pandas as pd
 import torch as tr
 from pathlib import Path
-import yaml
-import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -31,13 +32,13 @@ def parser():
         help='Path to FASTA file containing protein sequences to predict.'
     )
     parser.add_argument(
-        '--embedding_dir', '-e',
+        '--embedding-dir', '-e',
         type=str,
         default='data/embeddings/',
         help='Directory containing precomputed pLM embeddings.'
     )
     parser.add_argument(
-        '--output_dir', '-o',
+        '--output-dir', '-o',
         type=str,
         default='results/binding/',
         help='Output directory to save predictions.'
@@ -57,7 +58,7 @@ def parser():
     parser.add_argument(
         '--threads',
         type=int,
-        default=None,
+        default=4,
         help='Cap the number of CPU threads torch uses (torch.set_num_threads).'
     )
     parser.add_argument(
@@ -66,6 +67,17 @@ def parser():
         help='Enable verbose output'
     )
     return parser.parse_args()
+
+
+def set_threads(num_threads: int = 4):
+    """Set the number of threads for torch and other libraries."""
+    n_str = str(num_threads)
+    os.environ["OMP_NUM_THREADS"] = n_str
+    os.environ["MKL_NUM_THREADS"] = n_str
+    os.environ["OPENBLAS_NUM_THREADS"] = n_str
+    os.environ["NUMEXPR_NUM_THREADS"] = n_str
+
+    tr.set_num_threads(num_threads) # threads for intra-operation parallelism
 
 
 def load_plm_embedding(acc, plm_emb_dir):
@@ -87,17 +99,13 @@ def load_energy_model(weights_path, device):
 
 def build_ensemble_dirs(config: dict):
     """
-    Build the list of ensemble model directories.
-
-    The current layout stores one trained model per fold under a common base
-    directory, e.g.:
-
-        models/first_proposal/fold0/
-        models/first_proposal/fold1/
-
+    Build a list of ensemble model directories.
+    One trained model is stored per fold under a common base directory, e.g.:
+        - models/fold0/
+        - models/fold1/
     Each fold directory must contain both config.yaml and weights.pk.
     """
-    main_model_dir = Path(config.get("main_model_dir", "models/first_proposal"))
+    main_model_dir = Path(config["main_model_dir"])
 
     if not main_model_dir.exists():
         raise FileNotFoundError(f"Model directory not found: {main_model_dir}")
@@ -254,6 +262,8 @@ def save_prediction_timings(timings: list, dir: Path, model_name: str = "emb2bin
 def main():
     args = parser()
 
+    set_threads(args.threads)
+
     verbose = args.verbose
     device = args.device
     plm_emb_dir = args.embedding_dir
@@ -283,7 +293,6 @@ def main():
         raise ValueError(f"No sequences found in FASTA: {args.fasta}")
     threshold = config.get('threshold', 0.5)
 
-    # output_dir = output_dir / "predictions"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     all_rows = []
