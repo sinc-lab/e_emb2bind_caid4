@@ -1,0 +1,4 @@
+Dataset,auc,aps,f1,mcc,err,balanced_acc,precision,recall,f_max,optimal_threshold
+dev,0.764,0.567,0.545,0.394,0.241,0.717,0.475,0.639,0.549,0.486
+caid3/binding,0.853,0.528,0.507,0.415,0.258,0.769,0.369,0.809,0.549,0.58
+caid3/binding_idr,0.573,0.431,0.533,0.103,0.489,0.55,0.422,0.72,0.557,0.096

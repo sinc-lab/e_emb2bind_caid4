@@ -1,0 +1,29 @@
+batch_size: 16
+caid_path: dataset/
+categories:
+- non-binding
+- binding
+data_path: dataset/
+dataset: binding
+datasets_to_test:
+- dev
+- caid3/binding
+- caid3/binding_idr
+debug: false
+disprot_version: 25-12
+dropout_rate: 0.1
+emb_size: 352
+energy_emb_path: /home/sduarte/embeddings/binding/energy/
+filters: 300
+kernel_size: 9
+lr: 0.0001
+n_resnet: 3
+nepoch: 500
+patience: 10
+plm: esm2_6m
+plm_emb_path: /home/sduarte/embeddings/binding/esm2_6m/
+reduce_method: weighted-scaled
+soft_max: true
+subset: cv10_nr_seed42_wo-test/fold_1
+win_len: 34
+id: trial47_filt300_ker9_resnet3_win34_lr1e-04_drop0.10_28-06-2026_01-16-52
